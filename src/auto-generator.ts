@@ -45,13 +45,13 @@ export class AutoGenerator {
 
     // create JSDocs annotations for the model attributes
     if (this.options.lang !== 'ts') {
-      header += `${this.space[1]}/**\n`;
-      header += `${this.space[1]} * @typedef {import('sequelize').Model} Model\n`;
-      header += `${this.space[1]} */\n`;
+      header += `/**\n`;
+      header += ` * @typedef {import('sequelize').Model} Model\n`;
+      header += ` */\n`;
       header += `\n`
       header += `/**\n * @typedef {Object} #TABLE#Attributes\n`
       header += this.addJSDocs(table);
-      header += " */\n";
+      header += " */\n\n";
     }
 
     if (this.options.lang === 'ts') {
@@ -64,7 +64,7 @@ export class AutoGenerator {
       header += sp + "return #TABLE#.init(sequelize, DataTypes);\n";
       header += "}\n\n";
       header += "class #TABLE# extends Sequelize.Model {\n";
-      header += "/** @returns {_sequelize.ModelStatic<_sequelize.Model<#TABLE#Attributes, #TABLE#Attributes>>} */\n";
+      header += sp + "/** @returns {_sequelize.ModelStatic<_sequelize.Model<#TABLE#Attributes, #TABLE#Attributes>>} */\n";
       header += sp + "static init(sequelize, DataTypes) {\n";
       if (this.options.useDefine) {
         header += sp + "return sequelize.define('#TABLE#', {\n";
@@ -75,7 +75,7 @@ export class AutoGenerator {
       header += "import _sequelize from 'sequelize';\n";
       header += "const { Model, Sequelize } = _sequelize;\n\n";
       header += "export default class #TABLE# extends Model {\n";
-      header += "/** @returns {_sequelize.ModelStatic<_sequelize.Model<#TABLE#Attributes, #TABLE#Attributes>>} */\n";
+      header += sp + "/** @returns {_sequelize.ModelStatic<_sequelize.Model<#TABLE#Attributes, #TABLE#Attributes>>} */\n";
       header += sp + "static init(sequelize, DataTypes) {\n";
       if (this.options.useDefine) {
         header += sp + "return sequelize.define('#TABLE#', {\n";
