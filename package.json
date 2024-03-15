@@ -58,7 +58,8 @@
   "author": "Steve Schmitt (https://github.com/steveschmitt)",
   "contributors": [
     "Daniel Durante <me@danieldurante.com>",
-    "Yuping Zuo (https://github.com/zypA13510)"
+    "Yuping Zuo (https://github.com/zypA13510)",
+    "Jefrey Santos (https://github.com/jesobreira)"
   ],
   "license": "MIT",
   "dependencies": {
