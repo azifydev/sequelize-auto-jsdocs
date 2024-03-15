@@ -1,4 +1,4 @@
-# Sequelize-Auto
+# Sequelize-Auto-JSDocs
 
 <!-- [![Greenkeeper badge](https://badges.greenkeeper.io/sequelize/sequelize-auto.svg)](https://greenkeeper.io/) -->
 
@@ -6,9 +6,11 @@
 
 Automatically generate models for [SequelizeJS](https://github.com/sequelize/sequelize) via the command line.
 
+**This is a forked version that also generates JSDocs annotations to the models if you are not using Typescript, thus enabling autocomplete/autosuggest.** The examples on this README file are NOT updated accordingly.
+
 ## Install
 
-    npm install sequelize-auto
+    npm install sequelize-auto-jsdocs
 
 ## Prerequisites
 
@@ -16,17 +18,17 @@ You will need to install `sequelize`; it's no longer installed by `sequelize-aut
 
 You will need to install the correct dialect binding before using sequelize-auto.
 
-Dialect | Install
----|---
-MySQL/MariaDB | `npm install sequelize mysql2`
-Postgres | `npm install sequelize pg pg-hstore`
-Sqlite | `npm install sequelize sqlite3`
-MSSQL | `npm install sequelize tedious`
-
+| Dialect       | Install                                |
+| ------------- | -------------------------------------- |
+| MySQL/MariaDB | `npm install sequelize mysql2`       |
+| Postgres      | `npm install sequelize pg pg-hstore` |
+| Sqlite        | `npm install sequelize sqlite3`      |
+| MSSQL         | `npm install sequelize tedious`      |
 
 ## Usage
 
-    sequelize-auto -h <host> -d <database> -u <user> -x [password] -p [port]  --dialect [dialect] -c [/path/to/config] -o [/path/to/models] -t [tableName]
+    sequelize-auto-jsdocs -h`<host>` -d `<database>` -u `<user>` -x [password] -p [port]  --dialect [dialect] -c [/path/to/config] -o [/path/to/models] -t [tableName]
+
 ```
 Options:
     --help               Show help                                   [boolean]
@@ -329,7 +331,6 @@ const attr: OrderCreationAttributes = {
 const newOrder = await Order.create(attr);
 ```
 
-
 ## Configuration options
 
 For the `-c, --config` option, various JSON/configuration parameters are defined by Sequelize's `options` flag within the constructor. See the [Sequelize docs](https://sequelize.org/master/class/lib/sequelize.js~Sequelize.html#instance-constructor-constructor) for more info.
@@ -372,6 +373,7 @@ const auto = new SequelizeAuto('database', 'user', 'pass', {
 
 Or you can create the `sequelize` instance first, using a [connection string](https://sequelize.org/master/manual/getting-started.html#connecting-to-a-database),
 and then pass it to SequelizeAuto:
+
 ```js
 const SequelizeAuto = require('sequelize-auto');
 const Sequelize = require('sequelize');
@@ -386,7 +388,7 @@ auto.run();
 
 ## Resources
 
- - [Changelog](https://github.com/sequelize/sequelize-auto/blob/master/CHANGELOG.md)
+- [Changelog](https://github.com/sequelize/sequelize-auto/blob/master/CHANGELOG.md)
 
 ## Testing
 
@@ -396,7 +398,7 @@ To set up:
 2. Create a `.env` file from `sample.env` and set your username/password/port etc.  The env is read by `test/config.js`
 3. Build the TypeScript from the `src` directory into the `lib` directory:
 
-    `npm run build`
+   `npm run build`
 
 Then run one of the test commands below:
 

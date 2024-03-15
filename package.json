@@ -1,10 +1,10 @@
 {
-  "name": "sequelize-auto",
+  "name": "sequelize-auto-jsdocs",
   "version": "0.8.7",
   "publishConfig": {
     "tag": "latest"
   },
-  "description": "Automatically generate bare sequelize models from your database.",
+  "description": "Automatically generate bare sequelize models and JSDocs annotations from your database.",
   "main": "index.js",
   "types": "types",
   "keywords": [
@@ -25,14 +25,14 @@
     "*.md"
   ],
   "bin": {
-    "sequelize-auto": "bin/sequelize-auto"
+    "sequelize-auto-jsdocs": "bin/sequelize-auto"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sequelize/sequelize-auto.git"
+    "url": "https://github.com/jesobreira/sequelize-auto.git"
   },
   "bugs": {
-    "url": "https://github.com/sequelize/sequelize-auto/issues"
+    "url": "https://github.com/jesobreira/sequelize-auto/issues"
   },
   "nyc": {
     "exclude": [
