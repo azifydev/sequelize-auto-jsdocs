@@ -771,8 +771,9 @@ export class AutoGenerator {
 
       const defaultValue = fieldObj.defaultValue;
 
-      // this prop is optional if it is marked as optional (default null) or if it has a default value
-      const isOptional = this.getTypeScriptFieldOptional(table, field) || !!defaultValue;
+      // this prop is optional if it is marked as optional (default null)
+      //or if it has a default value, or autoincrement is true
+      const isOptional = this.getTypeScriptFieldOptional(table, field) || !!defaultValue || fieldObj.autoIncrement;
 
       str += ` * @property {${fieldType}${isOptional && !defaultValue ? ' | null' : ''}} ${isOptional ? '[' : ''}${recasedField}${defaultValue ? '=' + defaultValue : ''}${isOptional ? ']' : ''} - ${fieldObj.comment || ''}\n`;
     });
