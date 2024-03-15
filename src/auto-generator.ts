@@ -774,7 +774,7 @@ export class AutoGenerator {
       // this prop is optional if it is marked as optional (default null) or if it has a default value
       const isOptional = this.getTypeScriptFieldOptional(table, field) || !!defaultValue;
 
-      str += ` * @property {${fieldType}${isOptional ? ' | null' : ''}} ${isOptional ? '[' : ''}${recasedField}${defaultValue ? '=' + defaultValue : ''}${isOptional ? ']' : ''} - ${fieldObj.comment || ''}\n`;
+      str += ` * @property {${fieldType}${isOptional && !defaultValue ? ' | null' : ''}} ${isOptional ? '[' : ''}${recasedField}${defaultValue ? '=' + defaultValue : ''}${isOptional ? ']' : ''} - ${fieldObj.comment || ''}\n`;
     });
     return str;
   }
