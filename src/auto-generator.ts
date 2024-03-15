@@ -39,19 +39,32 @@ export class AutoGenerator {
     this.space = makeIndent(this.options.spaces, this.options.indentation);
   }
 
-  makeHeaderTemplate() {
+  makeHeaderTemplate(table: string) {
     let header = "";
     const sp = this.space[1];
+
+    // create JSDocs annotations for the model attributes
+    if (this.options.lang !== 'ts') {
+      header += `${this.space[1]}/**\n`;
+      header += `${this.space[1]} * @typedef {import('sequelize').Model} Model\n`;
+      header += `${this.space[1]} */\n`;
+      header += `\n`
+      header += `/**\n * @typedef {Object} #TABLE#Attributes\n`
+      header += this.addJSDocs(table);
+      header += " */\n";
+    }
 
     if (this.options.lang === 'ts') {
       header += "import * as Sequelize from 'sequelize';\n";
       header += "import { DataTypes, Model, Optional } from 'sequelize';\n";
     } else if (this.options.lang === 'es6') {
       header += "const Sequelize = require('sequelize');\n";
+      header += "/** @returns {_sequelize.ModelStatic<_sequelize.Model<#TABLE#Attributes, #TABLE#Attributes>>} */\n";
       header += "module.exports = (sequelize, DataTypes) => {\n";
       header += sp + "return #TABLE#.init(sequelize, DataTypes);\n";
       header += "}\n\n";
       header += "class #TABLE# extends Sequelize.Model {\n";
+      header += "/** @returns {_sequelize.ModelStatic<_sequelize.Model<#TABLE#Attributes, #TABLE#Attributes>>} */\n";
       header += sp + "static init(sequelize, DataTypes) {\n";
       if (this.options.useDefine) {
         header += sp + "return sequelize.define('#TABLE#', {\n";
@@ -62,6 +75,7 @@ export class AutoGenerator {
       header += "import _sequelize from 'sequelize';\n";
       header += "const { Model, Sequelize } = _sequelize;\n\n";
       header += "export default class #TABLE# extends Model {\n";
+      header += "/** @returns {_sequelize.ModelStatic<_sequelize.Model<#TABLE#Attributes, #TABLE#Attributes>>} */\n";
       header += sp + "static init(sequelize, DataTypes) {\n";
       if (this.options.useDefine) {
         header += sp + "return sequelize.define('#TABLE#', {\n";
@@ -70,6 +84,7 @@ export class AutoGenerator {
       }
     } else {
       header += "const Sequelize = require('sequelize');\n";
+      header += "/** @returns {_sequelize.ModelStatic<_sequelize.Model<#TABLE#Attributes, #TABLE#Attributes>>} */\n";
       header += "module.exports = function(sequelize, DataTypes) {\n";
       header += sp + "return sequelize.define('#TABLE#', {\n";
     }
@@ -79,11 +94,10 @@ export class AutoGenerator {
   generateText() {
     const tableNames = _.keys(this.tables);
 
-    const header = this.makeHeaderTemplate();
-
     const text: { [name: string]: string; } = {};
     tableNames.forEach(table => {
-      let str = header;
+      let str = this.makeHeaderTemplate(table);
+
       const [schemaName, tableNameOrig] = qNameSplit(table);
       const tableName = makeTableName(this.options.caseModel, tableNameOrig, this.options.singularize, this.options.lang);
 
@@ -741,6 +755,28 @@ export class AutoGenerator {
       jsType = 'any';
     }
     return jsType;
+  }
+
+  private addJSDocs(table: string) {
+    const fields = _.keys(this.tables[table]);
+    let str = '';
+    fields.forEach(field => {
+      const fieldObj = this.tables[table][field] as Field;
+
+      // get typescript field type
+      const fieldType = this.getTypeScriptFieldType(fieldObj, "type");
+
+      // recased field name
+      const recasedField = recase(this.options.caseProp, field);
+
+      const defaultValue = fieldObj.defaultValue;
+
+      // this prop is optional if it is marked as optional (default null) or if it has a default value
+      const isOptional = this.getTypeScriptFieldOptional(table, field) || !!defaultValue;
+
+      str += ` * @property {${fieldType}${isOptional ? ' | null' : ''}} ${isOptional ? '[' : ''}${recasedField}${defaultValue ? '=' + defaultValue : ''}${isOptional ? ']' : ''} - ${fieldObj.comment || ''}\n`;
+    });
+    return str;
   }
 
   private getEnumValues(fieldObj: TSField): string[] {
