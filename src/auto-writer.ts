@@ -26,12 +26,14 @@ export class AutoWriter {
     spaces?: boolean;
     indentation?: number;
   };
+  associations?: string;
   constructor(tableData: TableData, options: AutoOptions) {
     this.tableText = tableData.text as { [name: string]: string };
     this.foreignKeys = tableData.foreignKeys;
     this.relations = tableData.relations;
     this.options = options;
     this.space = makeIndent(this.options.spaces, this.options.indentation);
+    this.associations = '';
   }
 
   write() {
@@ -64,7 +66,7 @@ export class AutoWriter {
       const initString = this.createInitString(tableNames, assoc, this.options.lang);
       const initFilePath = path.join(this.options.directory, "init-models" + (isTypeScript ? '.ts' : '.js'));
       const writeFile = util.promisify(fs.writeFile);
-      const initPromise = writeFile(path.resolve(initFilePath), initString);
+      const initPromise = writeFile(path.resolve(initFilePath), initString + '\n' + this.associations);
       promises.push(initPromise);
     }
 
@@ -117,6 +119,27 @@ export class AutoWriter {
         const hAlias = this.options.noAlias ? '' : `as: "${asChildProp}", `;
         strBelongs += `${sp}${rel.parentModel}.${hasRel}(${rel.childModel}, { ${hAlias}foreignKey: "${rel.parentId}"});\n`;
       }
+    });
+
+    const tablesAssociations: any = {};
+    rels.forEach(rel => {
+      if (!tablesAssociations[rel.childModel]) {
+        tablesAssociations[rel.childModel] = {};
+      }
+
+      tablesAssociations[rel.childModel][rel.parentId] = rel.parentProp;
+    });
+
+    Object.keys(tablesAssociations).forEach(tableName => {
+      const associates = tablesAssociations[tableName];
+      this.associations += `${sp}export const ${tableName}Associates = {\n`;
+
+      Object.keys(associates).forEach(k => {
+        const v = associates[k];
+        this.associations += `${sp}${sp}${k}: '${v}',\n`;
+      });
+
+      this.associations += `${sp}}\n\n`;
     });
 
     // belongsToMany must come first
