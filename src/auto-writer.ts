@@ -26,14 +26,16 @@ export class AutoWriter {
     spaces?: boolean;
     indentation?: number;
   };
-  associations?: string;
+  tablesIncludes?: string;
+  tablesAssociations?: string;
   constructor(tableData: TableData, options: AutoOptions) {
     this.tableText = tableData.text as { [name: string]: string };
     this.foreignKeys = tableData.foreignKeys;
     this.relations = tableData.relations;
     this.options = options;
     this.space = makeIndent(this.options.spaces, this.options.indentation);
-    this.associations = '';
+    this.tablesIncludes = '';
+    this.tablesAssociations = '';
   }
 
   write() {
@@ -66,7 +68,7 @@ export class AutoWriter {
       const initString = this.createInitString(tableNames, assoc, this.options.lang);
       const initFilePath = path.join(this.options.directory, "init-models" + (isTypeScript ? '.ts' : '.js'));
       const writeFile = util.promisify(fs.writeFile);
-      const initPromise = writeFile(path.resolve(initFilePath), initString + '\n' + this.associations);
+      const initPromise = writeFile(path.resolve(initFilePath), initString + '\n' + this.tablesIncludes + '\n' + this.tablesAssociations);
       promises.push(initPromise);
     }
 
@@ -122,25 +124,45 @@ export class AutoWriter {
     });
 
     const tablesAssociations: any = {};
+    const tablesIncludes: any = {};
     rels.forEach(rel => {
-      if (!tablesAssociations[rel.childModel]) {
-        tablesAssociations[rel.childModel] = {};
-      }
+        if (!tablesIncludes[rel.childModel]) {
+            tablesIncludes[rel.childModel] = {};
+        }
+        if (!tablesAssociations[rel.childModel]) {
+          tablesAssociations[rel.childModel] = {};
+        }
 
-      tablesAssociations[rel.childModel][rel.parentId] = rel.parentProp;
+        tablesAssociations[rel.childModel][rel.parentId] = rel.parentProp
+        tablesIncludes[rel.childModel][rel.parentId] = JSON.stringify({
+          model: '_'+rel.parentModel,
+          as: rel.parentProp
+        }, null, 2).replace(/"(_[^"]+)"/g, '$1')
     });
 
+    this.tablesIncludes = 'export const TablesIncludes = {\n';
+    Object.keys(tablesIncludes).forEach(tableName => {
+        const tableIncludes = tablesIncludes[tableName];
+        this.tablesIncludes += `${sp}${tableName}: {\n`;
+        Object.keys(tableIncludes).forEach(k => {
+            const v = tableIncludes[k];
+            this.tablesIncludes += `${sp}${sp}${k}: ${v},\n`;
+        });
+        this.tablesIncludes += `${sp}},\n`;
+    });
+    this.tablesIncludes += `${sp}}\n\n`;
+
+    this.tablesAssociations = 'export const TablesAssociations = {\n';
     Object.keys(tablesAssociations).forEach(tableName => {
-      const associates = tablesAssociations[tableName];
-      this.associations += `${sp}export const ${tableName}Associates = {\n`;
-
-      Object.keys(associates).forEach(k => {
-        const v = associates[k];
-        this.associations += `${sp}${sp}${k}: '${v}',\n`;
+      const tableAssociations = tablesAssociations[tableName];
+      this.tablesAssociations += `${sp}${tableName}: {\n`;
+      Object.keys(tableAssociations).forEach(k => {
+          const v = tableAssociations[k];
+          this.tablesAssociations += `${sp}${sp}${k}: '${v}',\n`;
       });
-
-      this.associations += `${sp}}\n\n`;
-    });
+      this.tablesAssociations += `${sp}},\n`;
+  });
+  this.tablesAssociations += `${sp}}\n\n`;
 
     // belongsToMany must come first
     return strBelongsToMany + strBelongs;
